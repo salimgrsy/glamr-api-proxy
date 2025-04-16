@@ -25,19 +25,46 @@ module.exports = async (req, res) => {
   try {
     console.log('Request body:', JSON.stringify(req.body));
     
-    // Replicate API'ye istek gönderirken tam model bilgisini oluştur
-    // Gelen istek: {model: "cdingram/face-swap", version: "hash", input: {...}}
-    const apiRequestBody = {
-      version: req.body.model ? `${req.body.model}@${req.body.version}` : req.body.version,
-      input: req.body.input
-    };
+    // Replicate API'sine gönderilecek istek gövdesini oluştur
+    let apiRequestBody;
+    
+    // version formatını kontrol et - doğru format: tam hash (d1d6ea8c8be89d664a07a45726f7128109dee7030fdac424788d762c71ed111)
+    if (req.body.version && req.body.version.includes('/')) {
+      // Eğer version "owner/model:version" veya "owner/model" formatındaysa düzelt
+      const parts = req.body.version.split(':');
+      if (parts.length > 1) {
+        // owner/model:version formatı
+        apiRequestBody = {
+          version: parts[1], // Sadece version kısmını al
+          input: req.body.input
+        };
+      } else {
+        // Muhtemelen model ID'si veriliyor, kullanıcıdan hash istememiz gerekiyor
+        return res.status(400).json({ 
+          error: 'Invalid version format', 
+          details: 'Please provide the full version hash, not just the model name' 
+        });
+      }
+    } else if (req.body.model && req.body.version) {
+      // Eğer model ve version ayrı ayrı verilmişse
+      apiRequestBody = {
+        version: req.body.version, // Direkt versiyon hash'i
+        input: req.body.input
+      };
+    } else {
+      // Sadece version hash'i verilmişse
+      apiRequestBody = {
+        version: req.body.version,
+        input: req.body.input
+      };
+    }
     
     console.log('Sending to Replicate API:', JSON.stringify(apiRequestBody));
     
     // Replicate API'ye istek
     const response = await axios.post(
       'https://api.replicate.com/v1/predictions',
-      apiRequestBody,  // Düzeltilmiş istek gövdesi
+      apiRequestBody,
       {
         headers: {
           'Authorization': `Token ${REPLICATE_API_KEY}`,
