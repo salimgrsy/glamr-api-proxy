@@ -23,10 +23,12 @@ module.exports = async (req, res) => {
   }
 
   try {
+    console.log('Request body:', JSON.stringify(req.body));
+    
     // Replicate API'ye istek
     const response = await axios.post(
       'https://api.replicate.com/v1/predictions',
-      req.body,
+      req.body, // Doğrudan client'dan gelen body'yi kullan
       {
         headers: {
           'Authorization': `Token ${REPLICATE_API_KEY}`,
@@ -35,11 +37,13 @@ module.exports = async (req, res) => {
       }
     );
     
+    console.log('Replicate response:', JSON.stringify(response.data));
+    
     // Sonucu döndür
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-    return res.status(500).json({ 
+    console.error('Error details:', error.response?.data || error.message);
+    return res.status(error.response?.status || 500).json({ 
       error: 'Error making API request',
       details: error.response?.data || error.message 
     });
