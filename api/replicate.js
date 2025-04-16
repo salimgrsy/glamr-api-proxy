@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     // Replicate API'ye istek
     const response = await axios.post(
       'https://api.replicate.com/v1/predictions',
-      req.body, // Doğrudan client'dan gelen body'yi kullan
+      req.body,
       {
         headers: {
           'Authorization': `Token ${REPLICATE_API_KEY}`,

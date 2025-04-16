@@ -42,8 +42,8 @@ module.exports = async (req, res) => {
     // Sonucu döndür
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-    return res.status(500).json({ 
+    console.error('Error details:', error.response?.data || error.message);
+    return res.status(error.response?.status || 500).json({ 
       error: 'Error checking prediction status',
       details: error.response?.data || error.message 
     });
