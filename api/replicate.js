@@ -25,10 +25,19 @@ module.exports = async (req, res) => {
   try {
     console.log('Request body:', JSON.stringify(req.body));
     
+    // Replicate API'ye istek gönderirken tam model bilgisini oluştur
+    // Gelen istek: {model: "cdingram/face-swap", version: "hash", input: {...}}
+    const apiRequestBody = {
+      version: req.body.model ? `${req.body.model}@${req.body.version}` : req.body.version,
+      input: req.body.input
+    };
+    
+    console.log('Sending to Replicate API:', JSON.stringify(apiRequestBody));
+    
     // Replicate API'ye istek
     const response = await axios.post(
       'https://api.replicate.com/v1/predictions',
-      req.body,
+      apiRequestBody,  // Düzeltilmiş istek gövdesi
       {
         headers: {
           'Authorization': `Token ${REPLICATE_API_KEY}`,
